@@ -32,29 +32,30 @@ const LoginForm = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!validateForm()) return;
-
+  
     try {
-      const res = await fetch("https://jsonplaceholder.typicode.com/users");
-      const users = await res.json();
-      const match = users.find(
-        (user) =>
-          user.username.toLowerCase() === formData.username.toLowerCase() &&
-          user.email.toLowerCase() === formData.password.toLowerCase()
-      );
-
-      if (match) {
-        setAuthStatus({
-          type: "success",
-          message: "Login successful! Redirecting...",
-        });
+      const res = await fetch("http://localhost:5000/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          username: formData.username,
+          password: formData.password,
+        }),
+      });
+  
+      const data = await res.json();
+  
+      if (res.ok) {
+        setAuthStatus({ type: "success", message: data.message });
+  
+        // Store student ID in localStorage if needed for later APIs
+        localStorage.setItem("studentId", data.student_id);
+  
         setTimeout(() => {
           window.location.href = "/courses";
         }, 2000);
       } else {
-        setAuthStatus({
-          type: "error",
-          message: "Invalid username or password.",
-        });
+        setAuthStatus({ type: "error", message: data.message });
       }
     } catch {
       setAuthStatus({
@@ -63,6 +64,7 @@ const LoginForm = () => {
       });
     }
   };
+  
 
   return (
     <AuthContext.Provider value={{ authStatus }}>
